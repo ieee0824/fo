@@ -28,7 +28,7 @@ func (s *Stack[T]) Pop() T {
     return s.vs[s.p]
 }
 
-func Calc(rpn []string) int {
+func calcRpn(rpn []string) int {
     s := Stack[string]{
         vs: make([]string, 256),
     }
@@ -65,5 +65,5 @@ func Calc(rpn []string) int {
 }
 
 func main() {
-    fmt.Println(Calc(strings.Split("1 2 3 + *", " ")))
+    fmt.Println(calcRpn(strings.Split("1 2 3 + *", " ")))
 }
