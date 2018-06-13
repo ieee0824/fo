@@ -1,0 +1,38 @@
+package main
+
+import (
+    "fmt"
+    "errors"
+)
+
+type Stack[T] struct {
+    vs []T
+    p int
+}
+
+func (s *Stack[T]) Push(t T) error {
+    if len(s.vs) == s.p {
+        return errors.New("stack overflow")
+    }
+    s.vs[s.p] = t
+    s.p ++
+    return nil
+}
+
+func (s *Stack[T]) Pop() (T, error) {
+    if s.p == 0 {
+        return s.vs[0], errors.New("stack underflow")
+    }
+    s.p --
+    return s.vs[s.p], nil
+}
+
+func main() {
+    s := Stack[int]{
+        vs: make([]int, 256),
+    }
+    s.Push(0)
+    s.Push(1)
+    s.Push(2)
+    fmt.Println(s)
+}
