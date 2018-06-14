@@ -4,8 +4,16 @@ import (
     "fmt"
     "errors"
     "strconv"
-    "strings"
 )
+
+var op = map[rune] int {
+    '*': 0,
+    '/': 0,
+    '+': 1,
+    '-': 1,
+}
+
+type RPN []string
 
 type Stack[T] struct {
     vs []T
@@ -28,7 +36,18 @@ func (s *Stack[T]) Pop() T {
     return s.vs[s.p]
 }
 
-func calcRpn(rpn []string) int {
+func (s *Stack[T]) Len() int {
+    return s.p
+}
+
+func (s *Stack[T]) Top() T {
+    if s.p == 0 {
+        panic("stack is empty")
+    }
+    return s.vs[s.p-1]
+}
+
+func calcRpn(rpn RPN) int {
     s := Stack[string]{
         vs: make([]string, 256),
     }
@@ -64,6 +83,61 @@ func calcRpn(rpn []string) int {
     return ax
 }
 
+func parseFormula(s string) RPN {
+    rpn := RPN{}
+    var buffer string
+    stack := Stack[rune]{
+        vs: make([]rune, 256),
+    }
+
+
+    for i, token := range s {
+        switch (token) {
+            case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+                if buffer == "" {
+                    buffer = string([]rune{token})
+                } else {
+                    buffer += string([]rune{token})
+                }
+                if i == len(s) - 1 {
+                    rpn = append(rpn, buffer)
+                }
+            case '+', '-', '*', '/':
+                rpn = append(rpn, buffer)
+                buffer = ""
+                if stack.Len() == 0 || op[token] < op[stack.Top()] {
+                    stack.Push(token)
+                } else {
+                    for {
+                        rpn = append(rpn, string([]rune{stack.Pop()}))
+                        if stack.Len() == 0 || op[token] > op[stack.Top()] {
+                            stack.Push(token)
+                            break
+                        }
+                    }
+                }
+            case ' ':
+            default:
+                panic("unsupported token")
+        }
+    }
+
+    for {
+        rpn = append(rpn, string([]rune{stack.Pop()}))
+        if stack.Len() == 0 {
+            break
+        }
+    }
+
+
+    return rpn
+}
+
+func Calc(f string) int {
+    rpn := parseFormula(f)
+    return calcRpn(rpn)
+}
+
 func main() {
-    fmt.Println(calcRpn(strings.Split("1 2 3 + *", " ")))
+    fmt.Println(Calc("1+2*3"))
 }
